@@ -1,0 +1,51 @@
+package Rozetka;
+
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+
+public class RozetkaPage {
+    protected WebDriver _driver;
+    @FindBy(
+        id = "price[min]"
+    )
+    private WebElement minPrice;
+    @FindBy(
+        id = "price[max]"
+    )
+    private WebElement maxPrice;
+    @FindBy(
+        id = "submitprice"
+    )
+    private WebElement filterByPrice;
+
+    public RozetkaPage(WebDriver driver) {
+        this._driver = driver;
+        PageFactory.initElements(driver, this);
+    }
+
+    public RozetkaPage SetMinimumPrice(int price) {
+        this.minPrice.sendKeys(new CharSequence[]{Integer.toString(price)});
+        return this;
+    }
+
+    public RozetkaPage SetMaximumPrice(int price) {
+        this.maxPrice.sendKeys(new CharSequence[]{Integer.toString(price)});
+        return this;
+    }
+
+    public RozetkaPage submitPriceFilter() {
+        this.filterByPrice.sendKeys(new CharSequence[]{Keys.ENTER});
+        return this;
+    }
+
+    public int getMinPrice() {
+        return Integer.parseInt(this.minPrice.getAttribute("value"));
+    }
+
+    public int getMaxPrice() {
+        return Integer.parseInt(this.maxPrice.getAttribute("value"));
+    }
+}
