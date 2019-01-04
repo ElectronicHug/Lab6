@@ -1,0 +1,115 @@
+package Google;
+
+import com.assertthat.selenium_shutterbug.core.Shutterbug;
+import com.assertthat.selenium_shutterbug.utils.web.ScrollStrategy;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.util.Iterator;
+import java.util.List;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class GoogleSearchPage {
+    protected WebDriver _driver;
+    @FindBy(
+        name = "q"
+    )
+    private WebElement searchField;
+    @FindBy(
+        name = "btnG"
+    )
+    private WebElement searchButton;
+    @FindBy(
+        id = "pnnext"
+    )
+    private WebElement nextPage;
+    @FindBy(
+        id = "pnprev"
+    )
+    private WebElement prevPage;
+    @FindBy(
+        xpath = "//*[@id='rso']//h3/a"
+    )
+    private List<WebElement> listOfPageLinks;
+    String searchTerm;
+
+    public GoogleSearchPage(WebDriver driver) {
+        this._driver = driver;
+        PageFactory.initElements(driver, this);
+    }
+
+    public GoogleSearchPage searchFor(String keyword) {
+        this.searchTerm = keyword;
+        this.searchField.sendKeys(new CharSequence[]{this.searchTerm});
+        this.searchButton.submit();
+        WebElement myDynamicElement = (WebElement)(new WebDriverWait(this._driver, 1000L)).until(ExpectedConditions.presenceOfElementLocated(By.id("resultStats")));
+        return this;
+    }
+
+    public GoogleSearchPage goNextPage() {
+        this.nextPage.click();
+        return this;
+    }
+
+    public GoogleSearchPage goPrevPage() {
+        this.prevPage.click();
+        return this;
+    }
+
+    public int searchMyCompany(String CompanyWebSite) {
+        int numberOfPage = 1;
+
+        while(true) {
+            Iterator var3 = this.listOfPageLinks.iterator();
+
+            while(var3.hasNext()) {
+                WebElement webElement = (WebElement)var3.next();
+                String websiteName = webElement.getAttribute("href");
+                if (websiteName.equals(CompanyWebSite)) {
+                    this.searchField.clear();
+                    System.out.print(this.searchTerm + ": your company web site is on the page " + numberOfPage + ". See the screenshot\n");
+                    this.makeScreenShot(1, numberOfPage);
+                    return numberOfPage;
+                }
+            }
+
+            boolean buttonNext = this._driver.findElements(By.id("pnnext")).size() != 0;
+            if (!buttonNext) {
+                System.out.print(this.searchTerm + ": your company doesn't have reference to the keyword.\n");
+                this.makeScreenShot(0, numberOfPage);
+                this.searchField.clear();
+                return 0;
+            }
+
+            this.goNextPage();
+            ++numberOfPage;
+        }
+    }
+
+    public void makeScreenShot(int successFlag, int pageNum) {
+        if (successFlag == 1) {
+            this._driver.manage().window().setPosition(new Point(0, 0));
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            org.openqa.selenium.Dimension dim = new org.openqa.selenium.Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight());
+            this._driver.manage().window().setSize(dim);
+            Shutterbug.shootPage(this._driver, ScrollStrategy.BOTH_DIRECTIONS, 500, true).withName(this.searchTerm).save();
+        } else {
+            for(boolean buttonPrev = this._driver.findElements(By.id("pnprev")).size() != 0; buttonPrev; buttonPrev = this._driver.findElements(By.id("pnprev")).size() != 0) {
+                this.goPrevPage();
+                --pageNum;
+                this._driver.manage().window().setPosition(new Point(0, 0));
+                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                org.openqa.selenium.Dimension dim = new org.openqa.selenium.Dimension((int)screenSize.getWidth(), (int)screenSize.getHeight());
+                this._driver.manage().window().setSize(dim);
+                Shutterbug.shootPage(this._driver, ScrollStrategy.BOTH_DIRECTIONS, 500, true).withName(this.searchTerm + pageNum).save();
+            }
+        }
+
+    }
+}
