@@ -1,0 +1,35 @@
+package Google;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class UnitTest1 {
+    protected WebDriver driver;
+    private String _url = "http://google.co.in/";
+
+    public UnitTest1() {
+    }
+
+    @Before
+    public void openTheBrowser() {
+        String exePath = "/Users/macbook/Documents/chromedriver";
+        System.setProperty("webdriver.chrome.driver", exePath);
+        this.driver = new ChromeDriver();
+        this.driver.get(this._url);
+    }
+
+    @After
+    public void closeTheBrowser() {
+        this.driver.quit();
+    }
+
+    @Test
+    public void checkYourCompanyWebSiteIsInList() {
+        GoogleSearchPage page = new GoogleSearchPage(this.driver);
+        page.searchFor("new balance kiev");
+        page.searchMyCompany("https://www.buynewbalance.com/");
+    }
+}
